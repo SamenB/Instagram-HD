@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Instagram HD Viewer",
+  "version": "1.0.0",
+  "description": "Opens Instagram photos in their original maximum quality in a new tab",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.instagram.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
