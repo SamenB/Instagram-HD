@@ -1,4 +1,4 @@
-/* Button injected into each Instagram post image */
+/* ── Button injected into each Instagram post/story ───────────────────── */
 .ighd-btn {
   position: absolute;
   top: 8px;
@@ -24,27 +24,40 @@
   font-weight: 600;
   letter-spacing: 0.3px;
 
-  opacity: 0;
-  transform: scale(0.85);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  opacity: 0.6;
+  /* Always visible but subtle */
+  transform: scale(0.9);
+  transition: opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
 
   text-decoration: none;
   white-space: nowrap;
-
-  /* Prevent Instagram styles from bleeding in */
   box-sizing: border-box;
   line-height: 1;
+  pointer-events: auto;
 }
 
-/* Show button when the post wrapper is hovered */
-.ighd-wrapper:hover .ighd-btn {
-  opacity: 1;
-  transform: scale(1);
+/* Global Story button (stays on top of UI) */
+.ighd-story-btn {
+  position: fixed !important;
+  top: 24px !important;
+  right: 80px !important;
+  left: auto !important;
+  z-index: 9999999 !important;
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  background: #0095f6 !important;
+  opacity: 1 !important;
 }
 
+/* Brighten and scale up when actually hovering the button */
 .ighd-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1) !important;
   background: rgba(0, 0, 0, 0.85);
 }
+
 
 /* SVG icon inside the button */
 .ighd-btn svg {
@@ -54,7 +67,7 @@
   flex-shrink: 0;
 }
 
-/* The wrapper we add around every post article — must be relative for absolute positioning */
+/* Wrapper: must be position:relative so the absolute button sits correctly */
 .ighd-wrapper {
   position: relative;
 }
