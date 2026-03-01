@@ -118,11 +118,43 @@
     return null;
   }
 
-  function getVideoSrc(video) {
+  function getVideoSrc(video, articleNode) {
     // 1. Precise Match: Use the poster filename we cached when the video was first injected
     const pFile = video._ighdPosterFile;
     if (pFile && videoMap.has(pFile)) {
       return videoMap.get(pFile);
+    }
+
+    // 1.5. Post Shortcode Match: If poster is missing, find the post shortcode
+    const getCodeFromPath = (path) => {
+      const parts = path.split('/').filter(Boolean);
+      if ((parts[0] === 'p' || parts[0] === 'reel' || parts[0] === 'reels') && parts.length >= 2) {
+        return parts[1];
+      }
+      return null;
+    };
+
+    // Check page URL first (if user opened post in a modal or dedicated page)
+    const pageCode = getCodeFromPath(window.location.pathname);
+    if (pageCode && igIdMap.has(pageCode)) {
+      return igIdMap.get(pageCode);
+    }
+
+    // Check post article links if available in feed
+    if (articleNode) {
+      const links = articleNode.querySelectorAll("a[href*='/p/'], a[href*='/reel/'], a[href*='/reels/']");
+      for (const link of links) {
+        const href = link.getAttribute("href");
+        if (href) {
+          try {
+            const urlObj = new URL(href, window.location.origin);
+            const code = getCodeFromPath(urlObj.pathname);
+            if (code && igIdMap.has(code)) {
+              return igIdMap.get(code);
+            }
+          } catch (e) { }
+        }
+      }
     }
 
     // 2. Direct Source: if it's already an MP4 (not a blob)
@@ -265,7 +297,7 @@
       videoButtonCenters.length = 0;
 
       article.querySelectorAll("video").forEach((video) => {
-        inject(video, "▶ HD", () => getVideoSrc(video));
+        inject(video, "▶ HD", () => getVideoSrc(video, article));
 
         let wrapper = video.parentElement;
         while (wrapper && wrapper.tagName === "A" && wrapper !== document.body) {
@@ -377,7 +409,7 @@
         // 2. DOM geometry fallback
         const media = getActiveStoryMedia();
         if (!media) return null;
-        return (media.type === "video") ? getVideoSrc(media.el) : getBestImageSrc(media.el);
+        return (media.type === "video") ? getVideoSrc(media.el, null) : getBestImageSrc(media.el);
       };
 
       btn.addEventListener("click", (e) => {

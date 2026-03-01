@@ -31,8 +31,10 @@
         if (obj.video_versions || obj.video_url) {
             let vUrl = obj.video_url;
             if (Array.isArray(obj.video_versions) && obj.video_versions.length > 0) {
-                // Pick highest resolution video. These are combined mp4 files, not segments.
-                vUrl = [...obj.video_versions].sort((a, b) => (b.width || 0) - (a.width || 0))[0].url;
+                // Pick highest resolution standard MP4 (type 101, 102, 103). Ignore 104 (DASH audio-less stream).
+                const valid = obj.video_versions.filter((v) => v.type === 101 || v.type === 102 || v.type === 103 || !v.type);
+                const versions = valid.length > 0 ? valid : obj.video_versions;
+                vUrl = [...versions].sort((a, b) => ((b.width || 0) * (b.height || 1)) - ((a.width || 0) * (a.height || 1)))[0].url;
             }
 
             let pUrl = obj.thumbnail_url || obj.display_url || obj.pic_url;
@@ -47,7 +49,7 @@
         // Recurse into children
         try {
             if (Array.isArray(obj)) {
-                for (let i = 0; i < obj.length; i++) extractMedia(obj[i], depth + 1);
+                for (let i = obj.length - 1; i >= 0; i--) extractMedia(obj[i], depth + 1);
             } else {
                 for (const key in obj) {
                     if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -99,7 +101,7 @@
 
                 if (text.includes("video_versions") || text.includes("video_url")) {
                     const matches = text.match(/"video_url"\s*:\s*"([^"]+)"/g) || [];
-                    matches.forEach((m) => {
+                    matches.reverse().forEach((m) => {
                         const match = m.match(/"video_url"\s*:\s*"([^"]+)"/);
                         if (match) {
                             const vUrl = match[1].replace(/\\u0026/g, "&").replace(/\\u003C/g, "<").replace(/\\\//g, "/");
@@ -126,7 +128,7 @@
 
                     if (text.includes("video_versions") || text.includes("video_url")) {
                         const matches = text.match(/"video_url"\s*:\s*"([^"]+)"/g) || [];
-                        matches.forEach((m) => {
+                        matches.reverse().forEach((m) => {
                             const match = m.match(/"video_url"\s*:\s*"([^"]+)"/);
                             if (match) {
                                 const vUrl = match[1].replace(/\\u0026/g, "&").replace(/\\u003C/g, "<").replace(/\\\//g, "/");
